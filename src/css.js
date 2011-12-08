@@ -170,11 +170,13 @@ jQuery.each(["height", "width"], function( i, name ) {
 	jQuery.cssHooks[ name ] = {
 		get: function( elem, computed, extra ) {
 			if ( computed ) {
-
-				// Use swap to DRY/save bytes, but don't toggle anything unless offsetWidth is zero
-				return jQuery.swap( elem, elem.offsetWidth === 0 && cssShow, function() {
+				if ( elem.offsetWidth !== 0 ) {
 					return getWidthOrHeight( elem, name, extra );
-				});
+				} else {
+					return jQuery.swap( elem, cssShow, function() {
+						return getWidthOrHeight( elem, name, extra );
+					});
+				}
 			}
 		},
 

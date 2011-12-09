@@ -334,14 +334,14 @@ function getWidthOrHeight( elem, name, extra ) {
 	var val = name === "width" ? elem.offsetWidth : elem.offsetHeight,
 		i = name === "width" ? 1 : 0,
 
-		// Adjustments dependent upon extra. Underscore is the Top/Right/Bottom/Left placeholder.
+		// Adjustments dependent upon extra: margin; border; padding
 		// Remember: false -> 0; true -> 1
-		adjustments = { margin_: extra === "margin" };
+		adjustments = [ extra === "margin" ];
 
 	if ( val > 0 ) {
 		if ( extra !== "border" ) {
-			adjustments.padding_ = -!extra;
-			adjustments.border_Width = -!adjustments.margin_;
+			adjustments[ 1 ] = -!adjustments[ 0 ];
+			adjustments[ 2 ] = -!extra;
 		}
 	} else {
 
@@ -354,16 +354,20 @@ function getWidthOrHeight( elem, name, extra ) {
 		// Normalize "", auto, and prepare for extra
 		val = parseFloat( val ) || 0;
 
-		// Add padding, border, margin
-		adjustments.padding_ = !!extra;
-		adjustments.border_Width = extra && extra !== "padding";
+		// Add border and padding
+		adjustments[ 1 ] = extra && extra !== "padding";
+		adjustments[ 2 ] = !!extra;
 	}
 
 	for ( ; i < 4; i+=2 ) {
-		for ( name in adjustments ) {
-			if ( adjustments[ name ] ) {
-				val += adjustments[ name ] * parseFloat( jQuery.css( elem, name.replace( "_", cssExpand[ i ] ) ) ) || 0;
-			}
+		if ( adjustments[ 0 ] ) {
+			val += adjustments[ 0 ] * parseFloat( jQuery.css( elem, "margin" + cssExpand[ i ] ) ) || 0;
+		}
+		if ( adjustments[ 1 ] ) {
+			val += adjustments[ 1 ] * parseFloat( jQuery.css( elem, "border" + cssExpand[ i ] + "Width" ) ) || 0;
+		}
+		if ( adjustments[ 2 ] ) {
+			val += adjustments[ 2 ] * parseFloat( jQuery.css( elem, "padding" + cssExpand[ i ] ) ) || 0;
 		}
 	}
 

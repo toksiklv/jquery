@@ -791,7 +791,7 @@ jQuery.extend({
 			// If traditional, encode the "old" way (the way 1.3.2 or older
 			// did it), otherwise encode params recursively.
 			for ( prefix in a ) {
-				buildParams( prefix, a[ prefix ], traditional, add, [ a ] );
+				buildParams( prefix, a[ prefix ], traditional, add, [] );
 			}
 		}
 
@@ -806,31 +806,25 @@ function buildParams( prefix, obj, traditional, add, parents ) {
 
 	if ( isArray || ( !traditional && jQuery.type( obj ) === "object" ) ) {
 		// Serialize array or object item.
-		jQuery.each( obj, traditional || ( isArray && rbracket.test( prefix ) ) ?
-			function( i, v ) {
+		parents.push( obj );
+		jQuery.each( obj, function( i, v ) {
+			if ( traditional || ( isArray && rbracket.test( prefix ) ) ) {
 				// Treat each array item as a scalar.
 				add( prefix, v );
-			} :
 
-			function( i, v ) {
+			} else {
 				key = prefix + "[" + i + "]";
 
 				// Prevent infinite loops with a circular reference error
-				if ( typeof v === "object" ) {
-					if ( jQuery.inArray( v, parents ) >= 0 ) {
-						jQuery.error( "Circular reference: " + key );
-					}
-					parents.push( v );
+				if ( jQuery.inArray( v, parents ) >= 0 ) {
+					jQuery.error( key );
 				}
 
 				// Scalar array items don't need explicit indices
 				buildParams( isArray && typeof v !== "object" ? prefix + "[]" : key, v, traditional, add, parents );
-
-				if ( typeof v === "object" ) {
-					parents.pop();
-				}
-			},
-		!isArray );
+			}
+		}, !isArray );
+		parents.pop( obj );
 
 	} else {
 		// Serialize scalar item.

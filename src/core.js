@@ -481,8 +481,7 @@ jQuery.extend({
 	},
 
 	number: function( obj, fallback ) {
-		// multiplication by 0 coalesces finite numbers to 0 and infinities to NaN
-		return 0 * parseFloat( obj ) * obj + 1 ? +obj : fallback;
+		return isNaN( parseFloat(obj) ) || !isFinite( obj ) ? fallback : +obj;
 	},
 
 	isNumeric: function( obj ) {

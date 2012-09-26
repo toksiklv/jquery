@@ -695,7 +695,7 @@ jQuery.extend({
 			}
 			// Timeout
 			if ( s.async && s.timeout > 0 ) {
-				timeoutTimer = setTimeout( function(){
+				timeoutTimer = soon(function(){
 					jqXHR.abort( "timeout" );
 				}, s.timeout );
 			}

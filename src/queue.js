@@ -104,7 +104,7 @@ jQuery.fn.extend({
 		type = type || "fx";
 
 		return this.queue( type, function( next, hooks ) {
-			var timeout = setTimeout( next, time );
+			var timeout = soon( next, time );
 			hooks.stop = function() {
 				clearTimeout( timeout );
 			};

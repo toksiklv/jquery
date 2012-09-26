@@ -62,6 +62,10 @@ var
 		return ( letter + "" ).toUpperCase();
 	},
 
+	soon = function( fn, when ) {
+		return setTimeout( fn, when || 0 );
+	},
+
 	// The ready event handler and self cleanup method
 	DOMContentLoaded = function() {
 		if ( document.addEventListener ) {
@@ -377,7 +381,7 @@ jQuery.extend({
 
 		// Make sure body exists, at least, in case IE gets a little overzealous (ticket #5443).
 		if ( !document.body ) {
-			return setTimeout( jQuery.ready, 1 );
+			return soon( jQuery.ready );
 		}
 
 		// Remember that the DOM is ready
@@ -835,7 +839,7 @@ jQuery.ready.promise = function( obj ) {
 		// discovered by ChrisS here: http://bugs.jquery.com/ticket/12282#comment:15
 		if ( document.readyState === "complete" ) {
 			// Handle it asynchronously to allow scripts the opportunity to delay ready
-			setTimeout( jQuery.ready, 1 );
+			soon( jQuery.ready );
 
 		// Standards-based browsers support DOMContentLoaded
 		} else if ( document.addEventListener ) {
@@ -870,7 +874,7 @@ jQuery.ready.promise = function( obj ) {
 							// http://javascript.nwbox.com/IEContentLoaded/
 							top.doScroll("left");
 						} catch(e) {
-							return setTimeout( doScrollCheck, 50 );
+							return soon( doScrollCheck, 50 );
 						}
 
 						// and execute any waiting functions

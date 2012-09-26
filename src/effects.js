@@ -49,9 +49,9 @@ var fxNow, timerId,
 
 // Animations created synchronously will run synchronously
 function createFxNow() {
-	setTimeout(function() {
+	soon(function() {
 		fxNow = undefined;
-	}, 0 );
+	});
 	return ( fxNow = jQuery.now() );
 }
 

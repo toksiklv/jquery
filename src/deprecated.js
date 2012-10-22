@@ -1,34 +1,30 @@
 // Limit scope pollution from any deprecated API
 (function() {
 
-var matched, browser, eventAdd, eventRemove,
-	oldToggle = jQuery.fn.toggle,
+var browser = {},
 	rhoverHack = /(?:^|\s)hover(\.\S+|)\b/,
+	oldToggle = jQuery.fn.toggle,
+	eventAdd = jQuery.event.add,
+	eventRemove = jQuery.event.remove,
 	hoverHack = function( events ) {
 		return jQuery.event.special.hover ? events : events.replace( rhoverHack, "mouseenter$1 mouseleave$1" );
-	};
+	},
+	uaMatch = function( ua ) {
+		ua = ua.toLowerCase();
 
-// Use of jQuery.browser is frowned upon.
-// More details: http://api.jquery.com/jQuery.browser
-// jQuery.uaMatch maintained for back-compat
-jQuery.uaMatch = function( ua ) {
-	ua = ua.toLowerCase();
+		var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
+			/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
+			/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
+			/(msie) ([\w.]+)/.exec( ua ) ||
+			ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
+			[];
 
-	var match = /(chrome)[ \/]([\w.]+)/.exec( ua ) ||
-		/(webkit)[ \/]([\w.]+)/.exec( ua ) ||
-		/(opera)(?:.*version|)[ \/]([\w.]+)/.exec( ua ) ||
-		/(msie) ([\w.]+)/.exec( ua ) ||
-		ua.indexOf("compatible") < 0 && /(mozilla)(?:.*? rv:([\w.]+)|)/.exec( ua ) ||
-		[];
-
-	return {
-		browser: match[ 1 ] || "",
-		version: match[ 2 ] || "0"
-	};
-};
-
-matched = jQuery.uaMatch( navigator.userAgent );
-browser = {};
+		return {
+			browser: match[ 1 ] || "",
+			version: match[ 2 ] || "0"
+		};
+	},
+	matched = uaMatch( navigator.userAgent );
 
 if ( matched.browser ) {
 	browser[ matched.browser ] = true;
@@ -42,29 +38,37 @@ if ( browser.chrome ) {
 	browser.safari = true;
 }
 
-jQuery.browser = browser;
-
-jQuery.sub = function() {
-	function jQuerySub( selector, context ) {
-		return new jQuerySub.fn.init( selector, context );
-	}
-	jQuery.extend( true, jQuerySub, this );
-	jQuerySub.superclass = this;
-	jQuerySub.fn = jQuerySub.prototype = this();
-	jQuerySub.fn.constructor = jQuerySub;
-	jQuerySub.sub = this.sub;
-	jQuerySub.fn.init = function init( selector, context ) {
-		if ( context && context instanceof jQuery && !(context instanceof jQuerySub) ) {
-			context = jQuerySub( context );
+// Remove in 1.9
+jQuery.extend({
+	attrFn: {},
+	deletedIds: [],
+	uuid: 0,
+	browser: browser,
+	uaMatch: uaMatch,
+	sub: function() {
+		function jQuerySub( selector, context ) {
+			return new jQuerySub.fn.init( selector, context );
 		}
+		jQuery.extend( true, jQuerySub, this );
+		jQuerySub.superclass = this;
+		jQuerySub.fn = jQuerySub.prototype = this();
+		jQuerySub.fn.constructor = jQuerySub;
+		jQuerySub.sub = this.sub;
+		jQuerySub.fn.init = function init( selector, context ) {
+			if ( context && context instanceof jQuery && !(context instanceof jQuerySub) ) {
+				context = jQuerySub( context );
+			}
 
-		return jQuery.fn.init.call( this, selector, context, rootjQuerySub );
-	};
-	jQuerySub.fn.init.prototype = jQuerySub.fn;
-	var rootjQuerySub = jQuerySub(document);
-	return jQuerySub;
-};
+			return jQuery.fn.init.call( this, selector, context, rootjQuerySub );
+		};
+		jQuerySub.fn.init.prototype = jQuerySub.fn;
+		var rootjQuerySub = jQuerySub(document);
+		return jQuerySub;
+	}
+});
 
+
+// Support for .toggle( handler, handler, ... ) (see http://api.jquery.com/toggle-event/)
 jQuery.fn.toggle = function( fn, fn2 ) {
 
 	if ( !jQuery.isFunction( fn ) || !jQuery.isFunction( fn2 ) ) {
@@ -98,13 +102,6 @@ jQuery.fn.toggle = function( fn, fn2 ) {
 
 
 // Support for 'hover' type
-eventAdd = jQuery.event.add;
-
-//	Duck punch jQuery.event.add, and jquery.event.remove
-//	Signatures:
-//	jQuery.event = {
-//	add: function( elem, types, handler, data, selector ) {
-//	remove: function( elem, types, handler, selector, mappedTypes ) {
 jQuery.event.add = function( elem, types, handler, data, selector ){
 	if ( types ) {
 		types = hoverHack( types );
@@ -112,16 +109,11 @@ jQuery.event.add = function( elem, types, handler, data, selector ){
 	eventAdd.call( this, elem, types, handler, data, selector );
 };
 
-eventRemove = jQuery.event.remove;
-
 jQuery.event.remove = function( elem, types, handler, selector, mappedTypes ){
 	if ( types ) {
 		types = hoverHack( types );
 	}
 	eventRemove.call( this, elem, types, handler, selector, mappedTypes );
 };
-
-// Unused in 1.8, left in so attrFn-stabbers won't die; remove in 1.9
-jQuery.attrFn = {};
 
 })();

@@ -589,6 +589,28 @@ test("show() resolves correct default display #10227", function() {
 	jQuery.cache = {};
 });
 
+test("show() resolves correct default display when iframe display:none #12904", function() {
+	expect(1);
+
+	var ddisplay;
+
+	jQuery("body").append(
+		"<p id='ddisplay'>a<style>p{display:none}iframe{display:none !important}</style></p>"
+	);
+
+	ddisplay = jQuery("#ddisplay");
+
+	ddisplay.show();
+
+	equal(
+		ddisplay.css("display"), "block", "Correct display: block"
+	);
+
+	ddisplay.remove();
+
+	jQuery.cache = {};
+});
+
 test("toggle()", function() {
 	expect(9);
 	var div,
@@ -871,17 +893,17 @@ test( "cssHooks - expand", function() {
 test( "css opacity consistency across browsers (#12685)", function() {
 	expect( 4 );
 
-    var fixture = jQuery("#qunit-fixture"),
-        style = jQuery("<style>.opacityWithSpaces_t12685 { opacity: 0.1; filter: alpha(opacity = 10); } .opacityNoSpaces_t12685 { opacity: 0.2; filter: alpha(opacity=20); }</style>").appendTo(fixture),
-        el = jQuery("<div class='opacityWithSpaces_t12685'></div>").appendTo(fixture);
-        
-    equal( Math.round( el.css("opacity") * 100 ), 10, "opacity from style sheet (filter:alpha with spaces)" );
-    el.removeClass("opacityWithSpaces_t12685").addClass("opacityNoSpaces_t12685");
-    equal( Math.round( el.css("opacity") * 100 ), 20, "opacity from style sheet (filter:alpha without spaces)" );
-    el.css( "opacity", 0.3 );
-    equal( Math.round( el.css("opacity") * 100 ), 30, "override opacity" );
-    el.css( "opacity", "" );
-    equal( Math.round( el.css("opacity") * 100 ), 20, "remove opacity override" );
+		var fixture = jQuery("#qunit-fixture"),
+				style = jQuery("<style>.opacityWithSpaces_t12685 { opacity: 0.1; filter: alpha(opacity = 10); } .opacityNoSpaces_t12685 { opacity: 0.2; filter: alpha(opacity=20); }</style>").appendTo(fixture),
+				el = jQuery("<div class='opacityWithSpaces_t12685'></div>").appendTo(fixture);
+
+		equal( Math.round( el.css("opacity") * 100 ), 10, "opacity from style sheet (filter:alpha with spaces)" );
+		el.removeClass("opacityWithSpaces_t12685").addClass("opacityNoSpaces_t12685");
+		equal( Math.round( el.css("opacity") * 100 ), 20, "opacity from style sheet (filter:alpha without spaces)" );
+		el.css( "opacity", 0.3 );
+		equal( Math.round( el.css("opacity") * 100 ), 30, "override opacity" );
+		el.css( "opacity", "" );
+		equal( Math.round( el.css("opacity") * 100 ), 20, "remove opacity override" );
 });
 
 }

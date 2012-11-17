@@ -465,6 +465,8 @@ function css_defaultDisplay( nodeName ) {
 			})
 		);
 
+		iframe.style.cssText = "display: block !important";
+
 		// Create a cacheable copy of the iframe document on first call.
 		// IE and Opera will allow us to reuse the iframeDoc without re-writing the fake HTML
 		// document to it; WebKit & Firefox won't allow reusing the iframe document.

@@ -574,41 +574,33 @@ test( "show() resolves correct default display for detached nodes", function(){
 test("show() resolves correct default display #10227", function() {
 	expect(2);
 
-	jQuery("html").append(
+	var body = jQuery("body");
+	body.append(
 		"<p id='ddisplay'>a<style>body{display:none}</style></p>"
 	);
 
-	equal( jQuery("body").css("display"), "none", "Initial display: none" );
+	equal( body.css("display"), "none", "Initial display: none" );
 
-	jQuery("body").show();
-
-	equal( jQuery("body").css("display"), "block", "Correct display: block" );
+	body.show();
+	equal( body.css("display"), "block", "Correct display: block" );
 
 	jQuery("#ddisplay").remove();
-
-	jQuery.cache = {};
+	QUnit.expectJqData( body[0], "olddisplay" );
 });
 
 test("show() resolves correct default display when iframe display:none #12904", function() {
-	expect(1);
+	expect(2);
 
-	var ddisplay;
-
-	jQuery("body").append(
+	var ddisplay = jQuery(
 		"<p id='ddisplay'>a<style>p{display:none}iframe{display:none !important}</style></p>"
-	);
+	).appendTo("body");
 
-	ddisplay = jQuery("#ddisplay");
+	equal( ddisplay.css("display"), "none", "Initial display: none" );
 
 	ddisplay.show();
-
-	equal(
-		ddisplay.css("display"), "block", "Correct display: block"
-	);
+	equal( ddisplay.css("display"), "block", "Correct display: block" );
 
 	ddisplay.remove();
-
-	jQuery.cache = {};
 });
 
 test("toggle()", function() {

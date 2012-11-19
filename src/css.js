@@ -451,7 +451,7 @@ function css_defaultDisplay( nodeName ) {
 
 	if ( !display ) {
 		elem = jQuery( doc.createElement( nodeName ) );
-		display = elem.appendTo( doc.body ).css("display");
+		display = curCSS( elem.appendTo( doc.body )[0], "display" );
 		elem.remove();
 
 		// If the simple way fails, read from inside an iframe
@@ -465,7 +465,7 @@ function css_defaultDisplay( nodeName ) {
 			doc.close();
 
 			elem = jQuery( doc.createElement( nodeName ) );
-			display = elem.appendTo( doc.body ).css("display");
+			display = curCSS( elem.appendTo( doc.body )[0], "display" );
 			elem.remove();
 			iframe.detach();
 		}

@@ -353,14 +353,7 @@ jQuery.fn.extend({
 
 							if ( node.src ) {
 								// Hope ajax is available...
-								jQuery.ajax({
-									url: node.src,
-									type: "GET",
-									dataType: "script",
-									async: false,
-									global: false,
-									"throws": true
-								});
+								jQuery.getScriptSync( node.src );
 							} else {
 								jQuery.globalEval( ( node.text || node.textContent || node.innerHTML || "" ).replace( rcleanScript, "" ) );
 							}

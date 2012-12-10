@@ -280,16 +280,15 @@ if ( window.getComputedStyle ) {
 		return window.getComputedStyle( elem, null );
 	};
 
-	curCSS = function( elem, name, computed ) {
-		computed = computed || getStyles( elem );
+	curCSS = function( elem, name, _computed ) {
+		var width, minWidth, maxWidth,
+			computed = _computed || getStyles( elem ),
 
-		var ret, width, minWidth, maxWidth,
+			// getPropertyValue is only needed for .css('filter') in IE9, see #12537
+			ret = computed ? computed.getPropertyValue( name ) || computed[ name ] : undefined,
 			style = elem.style;
 
 		if ( computed ) {
-
-			// getPropertyValue is only needed for .css('filter') in IE9, see #12537
-			ret = computed.getPropertyValue( name ) || computed[ name ];
 
 			if ( ret === "" && !jQuery.contains( elem.ownerDocument, elem ) ) {
 				ret = jQuery.style( elem, name );
@@ -300,13 +299,17 @@ if ( window.getComputedStyle ) {
 			// Safari 5.1.7 (at least) returns percentage for a larger set of values, but width seems to be reliably pixels
 			// this is against the CSSOM draft spec: http://dev.w3.org/csswg/cssom/#resolved-values
 			if ( rnumnonpx.test( ret ) && rmargin.test( name ) ) {
+
+				// Remember the original values
 				width = style.width;
 				minWidth = style.minWidth;
 				maxWidth = style.maxWidth;
 
+				// Put in the new values to get a computed value out
 				style.minWidth = style.maxWidth = style.width = ret;
 				ret = computed.width;
 
+				// Revert the changed values
 				style.width = width;
 				style.minWidth = minWidth;
 				style.maxWidth = maxWidth;
@@ -320,11 +323,10 @@ if ( window.getComputedStyle ) {
 		return elem.currentStyle;
 	};
 
-	curCSS = function( elem, name, computed ) {
-		computed = computed || getStyles( elem );
-
-		var left, rsLeft,
-			ret = computed && computed[ name ],
+	curCSS = function( elem, name, _computed ) {
+		var left, rs, rsLeft,
+			computed = _computed || getStyles( elem ),
+			ret = computed ? computed[ name ] : undefined,
 			style = elem.style;
 
 		// Avoid setting ret to empty string here
@@ -344,11 +346,12 @@ if ( window.getComputedStyle ) {
 
 			// Remember the original values
 			left = style.left;
-			rsLeft = elem.runtimeStyle && elem.runtimeStyle.left;
+			rs = elem.runtimeStyle;
+			rsLeft = rs && rs.left;
 
 			// Put in the new values to get a computed value out
 			if ( rsLeft ) {
-				elem.runtimeStyle.left = elem.currentStyle.left;
+				rs.left = elem.currentStyle.left;
 			}
 			style.left = name === "fontSize" ? "1em" : ret;
 			ret = style.pixelLeft + "px";
@@ -356,7 +359,7 @@ if ( window.getComputedStyle ) {
 			// Revert the changed values
 			style.left = left;
 			if ( rsLeft ) {
-				elem.runtimeStyle.left = rsLeft;
+				rs.left = rsLeft;
 			}
 		}
 
@@ -508,7 +511,7 @@ jQuery.each([ "height", "width" ], function( i, name ) {
 		},
 
 		set: function( elem, value, extra ) {
-			var styles = extra ? getStyles( elem ) : 0;
+			var styles = extra && getStyles( elem );
 			return setPositiveNumber( elem, value, extra ?
 				augmentWidthOrHeight(
 					elem,

@@ -2327,7 +2327,7 @@ test("clone() delegated events (#11076)", function() {
 });
 
 test("checkbox state (#3827)", function() {
-	expect( 9 );
+	expect( 14 );
 
 	var markup = jQuery("<div><input type=checkbox><div>").appendTo("#qunit-fixture"),
 		cb = markup.find("input")[0];
@@ -2353,6 +2353,14 @@ test("checkbox state (#3827)", function() {
 
 	// Handlers only; checkbox state remains false
 	jQuery( cb ).triggerHandler( "click" );
+
+	// provided data (#13353)
+	cb.checked = true;
+	equal( cb.checked, true, "jQuery with data - checkbox is initially checked" );
+	jQuery( cb ).on( "click", function( e, data ) {
+		equal( data, "clicked", "Trigger data passed to handler" );
+	}).trigger( "click", ["clicked"] );
+	equal( cb.checked, false, "jQuery with data - checkbox is no longer checked" );
 });
 
 test("focus-blur order (#12868)", function() {

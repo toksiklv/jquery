@@ -235,7 +235,8 @@ jQuery.event = {
 			event :
 			new jQuery.Event( type, typeof event === "object" && event );
 
-		event.isTrigger = true;
+		// Trigger bitmask: & 1 for native handlers; & 2 for jQuery (always true)
+		event.isTrigger = onlyHandlers ? 2 : 3;
 		event.namespace = namespaces.join(".");
 		event.namespace_re = event.namespace ?
 			new RegExp( "(^|\\.)" + namespaces.join("\\.(?:.*\\.|)") + "(\\.|$)" ) :
@@ -545,12 +546,65 @@ jQuery.event = {
 			noBubble: true
 		},
 		click: {
-			// For checkbox, fire native event so checked state will be right
+			// Utilize native click to ensure correct checkbox state
+			// And go through event contortions so we don't lose trigger arguments
 			trigger: function() {
-				if ( jQuery.nodeName( this, "input" ) && this.type === "checkbox" && this.click ) {
-					this.click();
-					return false;
+				// Force setup before triggering a click
+				if ( jQuery.nodeName( this, "input" ) && this.type === "checkbox" && this.click && jQuery._data( this, "click" ) === undefined ) {
+					jQuery.event.add( this, "click", returnTrue );
 				}
+			},
+			setup: function() {
+				// Force the first click handler to be this reentrant monstrosity
+				if ( jQuery.nodeName( this, "input" ) && this.type === "checkbox" && this.click ) {
+					jQuery.event.add( this, "click", function( event ) {
+						var args = jQuery._data( this, "click" );
+
+						// If this is the outermost with-native-handlers event,
+						// fire a native click
+						if ( event.isTrigger & 1 && !args ) {
+							// Remember provided arguments
+							if ( arguments.length > 1 ) {
+								jQuery._data( this, "click", core_slice.call( arguments, 1 ) );
+							}
+
+							// Synchronous!
+							this.click();
+
+							// Fetch and forget the result
+							args = jQuery._data( this, "click" );
+							jQuery._data( this, "click", false );
+
+							// Outermost synthetic does not pass Go
+							event.preventDefault();
+							event.stopImmediatePropagation();
+
+							return args;
+
+						// If this is a native click from above, state is now correct
+						// Fire a synthetic click with the original arguments
+						} else if ( !event.isTrigger && args ) {
+							// Remember the result
+							jQuery._data( this, "click",
+								jQuery.event.trigger( event, args, this ) );
+
+							// Intermediate native does not pass Go
+							event.stopImmediatePropagation();
+						}
+					});
+
+					// Note that the handler was added, but don't abort .add
+					return jQuery._data( this, "click", false );
+				}
+
+				// Nothing to see here, move along
+				return false;
+			},
+
+			// Prevent default action if we're still in the Gordian knot
+			_default: function( event ) {
+				var target = event.target;
+				return jQuery.nodeName( target, "input" ) && target.type === "checkbox" && target.click && jQuery._data( target, "click" );
 			}
 		},
 		focus: {

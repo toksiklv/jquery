@@ -235,7 +235,8 @@ jQuery.event = {
 			event :
 			new jQuery.Event( type, typeof event === "object" && event );
 
-		event.isTrigger = onlyHandlers ? 2 : 1;
+		// Trigger bitmask: & 1 for native handlers; & 2 for jQuery (always true)
+		event.isTrigger = onlyHandlers ? 2 : 3;
 		event.namespace = namespaces.join(".");
 		event.namespace_re = event.namespace ?
 			new RegExp( "(^|\\.)" + namespaces.join("\\.(?:.*\\.|)") + "(\\.|$)" ) :
@@ -559,8 +560,9 @@ jQuery.event = {
 					jQuery.event.add( this, "click", function( event ) {
 						var args = jQuery._data( this, "click" );
 
-						// If this the outermost non-onlyHandlers event, fire a native click
-						if ( event.isTrigger === 1 && !args ) {
+						// If this is the outermost with-native-handlers event,
+						// fire a native click
+						if ( event.isTrigger & 1 && !args ) {
 							// Remember provided arguments
 							if ( arguments.length > 1 ) {
 								jQuery._data( this, "click", core_slice.call( arguments, 1 ) );
